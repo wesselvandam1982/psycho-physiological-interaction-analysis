@@ -1,0 +1,138 @@
+#!/usr/bin/env tcsh
+
+# created by uber_subject.py: version 0.37 (April 14, 2015)
+# creation date: Thu Sep 10 14:27:59 2015
+
+# In this script we do the actual PPI analysis in which we include an extra PPI regressor
+# for each condition. This is a gPPI analysis (generalized PPI analysis). 
+
+#!/bin/tcsh -f
+
+set subjects = "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40"
+set study = "ER"
+
+cd ..
+
+foreach s ( $subjects )
+
+cd $s/ppi_preprocessing$s.results
+set subj = ppi_preprocessing$s
+
+# ------------------------------
+# run the regression analysis
+3dDeconvolve -input pb05.$subj.r*.scale+tlrc.HEAD                             \
+    -censor censor_${subj}_combined_2.1D                                      \
+    -ortvec ROI.CSFe_rall.1D ROI.CSFe                                         \
+    -polort 4                                                                 \
+    -num_stimts 47                                                            \
+    -stim_times 1 stimuli/$s.ButtonPress.1D 'BLOCK(1,1)'                       \
+    -stim_label 1 BP                                                          \
+    -stim_times 2 stimuli/$s.instructions_decrease_PS.1D 'BLOCK(3,1)'          \
+    -stim_label 2 InstDec_PS                                                  \
+    -stim_times 3 stimuli/$s.instructions_decrease_DS.1D 'BLOCK(3,1)'          \
+    -stim_label 3 InstDec_DS                                                  \
+    -stim_times 4 stimuli/$s.instructions_look_PS.1D 'BLOCK(3,1)'              \
+    -stim_label 4 InstLook_PS                                                 \
+    -stim_times 5 stimuli/$s.instructions_look_DS.1D 'BLOCK(3,1)'              \
+    -stim_label 5 InstLook_DS                                                 \
+    -stim_times 6 stimuli/$s.instructions_neutral.1D 'BLOCK(3,1)'              \
+    -stim_label 6 InstNeu                                                     \
+    -stim_times 7 stimuli/$s.negative_decrease_PS.1D 'BLOCK(6,1)'              \
+    -stim_label 7 NegDec_PS                                                   \
+    -stim_times 8 stimuli/$s.negative_decrease_DS.1D 'BLOCK(6,1)'              \
+    -stim_label 8 NegDec_DS                                                   \
+    -stim_times 9 stimuli/$s.negative_look_PS.1D 'BLOCK(6,1)'                  \
+    -stim_label 9 NegLook_PS                                                  \
+    -stim_times 10 stimuli/$s.negative_look_DS.1D 'BLOCK(6,1)'                 \
+    -stim_label 10 NegLook_DS                                                 \
+    -stim_times 11 stimuli/$s.neutral_look_PS.1D 'BLOCK(6,1)'                  \
+    -stim_label 11 NeuLook_PS                                                 \
+    -stim_times 12 stimuli/$s.neutral_look_DS.1D 'BLOCK(6,1)'                  \
+    -stim_label 12 NeuLook_DS                                                 \
+    -stim_times 13 stimuli/$s.NULL.1D 'BLOCK(3,1)'                             \
+    -stim_label 13 NULL                                                       \
+    -stim_times 14 stimuli/$s.positive_decrease_PS.1D 'BLOCK(6,1)'             \
+    -stim_label 14 PosDec_PS                                                  \
+    -stim_times 15 stimuli/$s.positive_decrease_DS.1D 'BLOCK(6,1)'             \
+    -stim_label 15 PosDec_DS                                                  \
+    -stim_times 16 stimuli/$s.positive_look_PS.1D 'BLOCK(6,1)'                 \
+    -stim_label 16 PosLook_PS                                                 \
+    -stim_times 17 stimuli/$s.positive_look_DS.1D 'BLOCK(6,1)'                 \
+    -stim_label 17 PosLook_DS                                                 \
+    -stim_file 18 stimuli/p6.LDLPFC.01.ButttonPress.rall.PPI.1D                \
+    -stim_label 18 PPI.ButtonPress                                            \
+    -stim_file 19 stimuli/p6.LDLPFC.02.NULL.rall.PPI.1D                       \
+    -stim_label 19 PPI.NULL                                                   \
+    -stim_file 20 stimuli/p6.LDLPFC.03.instr_dec_DS.rall.PPI.1D               \
+    -stim_label 20 PPI.instr_dec_DS                                           \
+    -stim_file 21 stimuli/p6.LDLPFC.04.instr_dec_PS.rall.PPI.1D               \
+    -stim_label 21 PPI.instr_dec_PS                                           \
+    -stim_file 22 stimuli/p6.LDLPFC.05.instr_look_DS.rall.PPI.1D               \
+    -stim_label 22 PPI.instr_look_DS                                           \
+    -stim_file 23 stimuli/p6.LDLPFC.06.instr_look_PS.rall.PPI.1D               \
+    -stim_label 23 PPI.instr_look_PS                                           \
+    -stim_file 24 stimuli/p6.LDLPFC.07.instr_neutr.rall.PPI.1D               \
+    -stim_label 24 PPI.instr_neutr                                           \
+    -stim_file 25 stimuli/p6.LDLPFC.08.neg_dec_DS.rall.PPI.1D               \
+    -stim_label 25 PPI.neg_dec_DS                                           \
+    -stim_file 26 stimuli/p6.LDLPFC.09.neg_dec_PS.rall.PPI.1D               \
+    -stim_label 26 PPI.neg_dec_PS                                           \
+    -stim_file 27 stimuli/p6.LDLPFC.10.neg_look_DS.rall.PPI.1D               \
+    -stim_label 27 PPI.neg_look_DS                                           \
+    -stim_file 28 stimuli/p6.LDLPFC.11.neg_look_PS.rall.PPI.1D               \
+    -stim_label 28 PPI.neg_look_PS                                           \
+    -stim_file 29 stimuli/p6.LDLPFC.12.neutr_look_DS.rall.PPI.1D               \
+    -stim_label 29 PPI.neutr_look_DS                                           \
+    -stim_file 30 stimuli/p6.LDLPFC.13.neutr_look_PS.rall.PPI.1D               \
+    -stim_label 30 PPI.neutr_look_PS                                           \
+    -stim_file 31 stimuli/p6.LDLPFC.14.pos_dec_DS.rall.PPI.1D               \
+    -stim_label 31 PPI.pos_dec_DS                                           \
+    -stim_file 32 stimuli/p6.LDLPFC.15.pos_dec_PS.rall.PPI.1D               \
+    -stim_label 32 PPI.pos_dec_PS                                           \
+    -stim_file 33 stimuli/p6.LDLPFC.16.pos_look_DS.rall.PPI.1D               \
+    -stim_label 33 PPI.pos_look_DS                                           \
+    -stim_file 34 stimuli/p6.LDLPFC.17.pos_look_PS.rall.PPI.1D               \
+    -stim_label 34 PPI.pos_look_PS                                           \
+    -stim_file 35 stimuli/ppi.seed.LDLPFC.Subj$s.1D                               \
+    -stim_label 35 PPI.seed.DLPFC                                              \
+    -stim_file 36 motion_demean.1D'[0]' -stim_base 36 -stim_label 36 roll_01  \
+    -stim_file 37 motion_demean.1D'[1]' -stim_base 37 -stim_label 37 pitch_01 \
+    -stim_file 38 motion_demean.1D'[2]' -stim_base 38 -stim_label 38 yaw_01   \
+    -stim_file 39 motion_demean.1D'[3]' -stim_base 39 -stim_label 39 dS_01    \
+    -stim_file 40 motion_demean.1D'[4]' -stim_base 40 -stim_label 40 dL_01    \
+    -stim_file 41 motion_demean.1D'[5]' -stim_base 41 -stim_label 41 dP_01    \
+    -stim_file 42 motion_deriv.1D'[0]' -stim_base 42 -stim_label 42 roll_02   \
+    -stim_file 43 motion_deriv.1D'[1]' -stim_base 43 -stim_label 43 pitch_02  \
+    -stim_file 44 motion_deriv.1D'[2]' -stim_base 44 -stim_label 44 yaw_02    \
+    -stim_file 45 motion_deriv.1D'[3]' -stim_base 45 -stim_label 45 dS_02     \
+    -stim_file 46 motion_deriv.1D'[4]' -stim_base 46 -stim_label 46 dL_02     \
+    -stim_file 47 motion_deriv.1D'[5]' -stim_base 47 -stim_label 47 dP_02     \
+    -jobs 2                                                                   \
+    -gltsym 'SYM: NegDec_PS -NegLook_PS'                                      \
+    -glt_label 1 NegDec_PS-NegLook_PS                                         \
+    -gltsym 'SYM: NegDec_DS -NegLook_DS'                                      \
+    -glt_label 2 NegDec_DS-NegLook_DS                                         \
+    -gltsym 'SYM: PPI.neg_dec_PS  -PPI.neg_look_PS '                          \
+    -glt_label 3 PPI:neg_dec_PS-neg_look_PS                                   \
+    -gltsym 'SYM: PPI.neg_dec_DS  -PPI.neg_look_DS '                          \
+    -glt_label 4 PPI:neg_dec_DS-neg_look_DS                                   \
+    -gltsym 'SYM: NegDec_DS -NegDec_PS'                                       \
+    -glt_label 5 PPI:neg_dec_DS-neg_dec_PS                                    \
+    -gltsym 'SYM: NegLook_DS -NegLook_PS'                                       \
+    -glt_label 6 PPI:neg_look_DS-neg_look_PS                                    \
+    -bucket stats.ppi_preprocessing1.wave.24                                  \
+    -fout -tout -x1D X.xmat.1D -xjpeg X.jpg                                   \
+    -x1D_uncensored X.nocensor.xmat.1D                                        \
+    -fitts fitts.$subj                                                        \
+    -errts errts.${subj}                                                      \
+#    -x1D_stop                                                                 \
+    -cbucket all_betas.$subj                                                  \
+    -bucket stats.$subj                                                       
+    
+
+# create an all_runs dataset to match the fitts, errts, etc.
+3dTcat -prefix all_runs.$subj pb05.$subj.r*.scale+tlrc.HEAD
+
+cd ../..
+	
+end
