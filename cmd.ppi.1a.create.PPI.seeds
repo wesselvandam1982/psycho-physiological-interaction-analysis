@@ -1,0 +1,33 @@
+#!/usr/bin/env tcsh
+
+# created by uber_subject.py: version 0.37 (April 14, 2015)
+# creation date: Thu Sep 10 14:27:59 2015
+
+# This is a script in which we will generate a seed time series, ppi.seed.subj.1D
+# We will first create a ROI mask on the basis of coordinates that we want to extract
+# the time course from. In our case this will be the left DLPFC. In this step we will 
+# also generate seed time courses for the R DLPFC, Left Amygdala and Right Amygdala. 
+
+# Left DLPFC (-41, 11, 41)
+# Right DLPFC (36, 16, 41)
+# Left Amygdala (-25, 2, -13)
+# Right Amygdala (27, 1, -11)
+
+# In the second step we will extract the residual (or detrended) time course information from
+# the ROI, by undumping information from the errts (residual time course) file. 
+
+set subjects = "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40"
+set study = "ER"
+
+foreach s ( $subjects )
+
+3dmaskave -quiet -mask LeftDLPFC+tlrc errts.ppi_preprocessing${s}_REML+tlrc > ppi.seed.LDLPFC.Subj$s.1D
+3dmaskave -quiet -mask RightDLPFC+tlrc errts.ppi_preprocessing${s}_REML+tlrc > ppi.seed.RDLPFC.Subj$s.1D
+3dmaskave -quiet -mask LeftAmygdala+tlrc errts.ppi_preprocessing${s}_REML+tlrc > ppi.seed.LAmy.Subj$s.1D
+3dmaskave -quiet -mask RightAmygdala+tlrc errts.ppi_preprocessing${s}_REML+tlrc > ppi.seed.RAmy.Subj$s.1D
+3dmaskave -quiet -mask Bilat_Amygdala+tlrc errts.ppi_preprocessing_correct_tshift${s}_REML+tlrc > ppi.seed.BilAmy.Subj$s.1D
+3dmaskave -quiet -mask LeftDLPFC+tlrc errts.ppi_preprocessing_correct_tshift${s}_REML+tlrc > ppi.seed.LDLPFC.Subj$s.1D
+ 	
+cp 	ppi.seed.*.Subj$s.1D ../$s/ppi_preprocessing_correct_tshift$s.results
+	
+end
