@@ -1,0 +1,327 @@
+#!/bin/tcsh -f
+
+# Usage: SPMG2_analysis.ashx ex
+#SPMG2_analysis.ashx group
+#SPMG2_analysis.ashx ex group
+
+#########################################
+
+set fwhm = 6
+set study = "pn"
+
+
+# for spmg_calhoun_indrt.bucket
+
+set conditions = "BP@1 InstDec_PS@3 InstDec_DS@5 InstLook_PS@7 InstLook_DS@9 NegDec_PS@13 NegDec_DS@15 NegLook_PS@17 NegLook_DS@19 NeuLook_PS@21 NeuLook_DS@23 NULL@25 PosDec_PS@27 PosDec_DS@29 PosLook_PS@31 PosLook_DS@33 PPI_NegDec_DS@35 PPI_NegDec_PS@37 PPI_NegLook_DS@39 PPI_NegLook_PS@41 PPI_PosDec_DS@43 PPI_PosDec_PS@45 PPI_PosLook_DS@47 PPI_PosLook_PS@49"
+#set subjects = "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40"
+#set subjects = "1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 34 35 36 37 38 39 40"
+set subjects = "6 10 14 18 22 26 30 34 38 4 8 12 16 20 24 28 32 36 40"
+#set subjects = "1"
+set s = "ppi_preprocessing"
+set mergedir = "/Users/batman/Documents/EmotionalRegulation_fMRI_study/Model_Wave_function_tshift_PPI_REML"
+set homedir = "/Users/batman/Documents/EmotionalRegulation_fMRI_study"
+
+#########################################
+
+if ( $1 == "ex") then
+
+  echo "Part 1 ================================="
+
+
+  foreach subject ( $subjects )
+
+	cd ${homedir}/${subject}/${s}${subject}.results
+
+    set bucketname = "basis.wave_function_tshift_PPI_stats.ppi_preprocessing${subject}_REML"
+
+	foreach item ( ${conditions} )
+ 
+	  set cond = `echo $item | cut -f1 -d"@"`
+	  set b1loc = `echo $item | cut -f2 -d"@"` # beta1 = canonical beta
+
+	  if (-e b1+tlrc.HEAD) rm -f b1+tlrc.*
+	  if (-e b2+tlrc.HEAD) rm -f b2+tlrc.*
+
+	  3dbuc2fim -prefix b1 "${bucketname}+tlrc[${b1loc}]"
+
+	  if (-e ${cond}+tlrc.HEAD) rm -f ${cond}+tlrc.*
+
+  	 # only b1, no calhoun correction
+	 3dcopy b1+tlrc ${cond}+tlrc
+	 3drename ${cond}+tlrc ${cond}.bl${fwhm}
+
+     mv ${cond}.bl${fwhm}+tlrc.HEAD ${mergedir}/${subject}.${cond}.bl${fwhm}+tlrc.HEAD
+	 mv ${cond}.bl${fwhm}+tlrc.BRIK ${mergedir}/${subject}.${cond}.bl${fwhm}+tlrc.BRIK #check whether your BRIK files are being zipped or not!
+
+ #     rm -f ${cond}*+*.*  # delete +orig +tlrc files to save space
+	  rm -f b?+tlrc* b??+tlrc*
+      echo ${cond}
+
+	end
+
+	cd ../../../..
+
+  end  # subject
+
+endif
+
+
+if ( $1 == "group" || $2 == "group" ) then
+
+  echo "Part 2 ================================="
+
+  cd ${mergedir}
+
+  # perform t-test for each condition using the blurred and tlrc-ed briks
+
+  set group = "basis.WAVE_PPI_analysis_REML"
+
+	set cond = "BP"
+	set BPlist = ""
+        foreach subj ( $subjects )
+          set BPlist = "$BPlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+
+	set cond = "InstDec_DS"
+	set InstDec_DSlist = ""
+        foreach subj ( $subjects )
+          set InstDec_DSlist = "$InstDec_DSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+
+	set cond = "InstDec_PS"
+	set InstDec_PSlist = ""
+        foreach subj ( $subjects )
+          set InstDec_PSlist = "$InstDec_PSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+
+	set cond = "InstLook_DS"
+	set InstLook_DSlist = ""
+        foreach subj ( $subjects )
+          set InstLook_DSlist = "$InstLook_DSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+
+	set cond = "InstLook_PS"
+	set InstLook_PSlist = ""
+        foreach subj ( $subjects )
+          set InstLook_PSlist = "$InstLook_PSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+        
+	set cond = "NegDec_DS"
+	set NegDec_DSlist = ""
+        foreach subj ( $subjects )
+          set NegDec_DSlist = "$NegDec_DSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+
+	set cond = "NegDec_PS"
+	set NegDec_PSlist = ""
+        foreach subj ( $subjects )
+          set NegDec_PSlist = "$NegDec_PSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end 
+        
+	set cond = "NegLook_DS"
+	set NegLook_DSlist = ""
+        foreach subj ( $subjects )
+          set NegLook_DSlist = "$NegLook_DSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+
+	set cond = "NegLook_PS"
+	set NegLook_PSlist = ""
+        foreach subj ( $subjects )
+          set NegLook_PSlist = "$NegLook_PSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end         
+        
+	set cond = "NULL"
+	set NULLlist = ""
+        foreach subj ( $subjects )
+          set NULLlist = "$NULLlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end           
+        
+ 	set cond = "PosDec_DS"
+	set PosDec_DSlist = ""
+        foreach subj ( $subjects )
+          set PosDec_DSlist = "$PosDec_DSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+        
+ 	set cond = "PosDec_PS"
+	set PosDec_PSlist = ""
+        foreach subj ( $subjects )
+          set PosDec_PSlist = "$PosDec_PSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+                
+	set cond = "PosLook_DS"
+	set PosLook_DSlist = ""
+        foreach subj ( $subjects )
+          set PosLook_DSlist = "$PosLook_DSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+
+	set cond = "PosLook_PS"
+	set PosLook_PSlist = ""
+        foreach subj ( $subjects )
+          set PosLook_PSlist = "$PosLook_PSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end  
+        
+## Building the lists for the PPI regressors
+
+	set cond = "PPI_BP"
+	set PPI_BPlist = ""
+        foreach subj ( $subjects )
+          set PPI_BPlist = "$PPI_BPlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+
+	set cond = "PPI_InstDec_DS"
+	set PPI_InstDec_DSlist = ""
+        foreach subj ( $subjects )
+          set PPI_InstDec_DSlist = "$PPI_InstDec_DSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+
+	set cond = "PPI_InstDec_PS"
+	set PPI_InstDec_PSlist = ""
+        foreach subj ( $subjects )
+          set PPI_InstDec_PSlist = "$PPI_InstDec_PSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+
+	set cond = "PPI_InstLook_DS"
+	set PPI_InstLook_DSlist = ""
+        foreach subj ( $subjects )
+          set PPI_InstLook_DSlist = "$PPI_InstLook_DSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+
+	set cond = "PPI_InstLook_PS"
+	set PPI_InstLook_PSlist = ""
+        foreach subj ( $subjects )
+          set PPI_InstLook_PSlist = "$PPI_InstLook_PSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+        
+	set cond = "PPI_NegDec_DS"
+	set PPI_NegDec_DSlist = ""
+        foreach subj ( $subjects )
+          set PPI_NegDec_DSlist = "$PPI_NegDec_DSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+
+	set cond = "PPI_NegDec_PS"
+	set PPI_NegDec_PSlist = ""
+        foreach subj ( $subjects )
+          set PPI_NegDec_PSlist = "$PPI_NegDec_PSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end 
+        
+	set cond = "PPI_NegLook_DS"
+	set PPI_NegLook_DSlist = ""
+        foreach subj ( $subjects )
+          set PPI_NegLook_DSlist = "$PPI_NegLook_DSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+
+	set cond = "PPI_NegLook_PS"
+	set PPI_NegLook_PSlist = ""
+        foreach subj ( $subjects )
+          set PPI_NegLook_PSlist = "$PPI_NegLook_PSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end         
+        
+	set cond = "PPI_NULL"
+	set PPI_NULLlist = ""
+        foreach subj ( $subjects )
+          set PPI_NULLlist = "$PPI_NULLlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end           
+        
+ 	set cond = "PPI_PosDec_DS"
+	set PPI_PosDec_DSlist = ""
+        foreach subj ( $subjects )
+          set PPI_PosDec_DSlist = "$PPI_PosDec_DSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+ 
+  	set cond = "PPI_PosDec_PS"
+	set PPI_PosDec_PSlist = ""
+        foreach subj ( $subjects )
+          set PPI_PosDec_PSlist = "$PPI_PosDec_PSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end       
+        
+	set cond = "PPI_PosLook_DS"
+	set PPI_PosLook_DSlist = ""
+        foreach subj ( $subjects )
+          set PPI_PosLook_DSlist = "$PPI_PosLook_DSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+
+	set cond = "PPI_PosLook_PS"
+	set PPI_PosLook_PSlist = ""
+        foreach subj ( $subjects )
+          set PPI_PosLook_PSlist = "$PPI_PosLook_PSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end  
+  
+ ########### Building the list for the regular contrasts ######
+ 
+ 	set cond = "NegDec_DS_NegLook_DS"
+	set NegDec_DS_NegLook_DSlist = ""
+        foreach i ( $subjects )
+	  set subj = `echo $i | cut -f1 -d"@"`
+	  3dcalc -a ${subj}.NegDec_DS.bl${fwhm}+tlrc -b ${subj}.NegLook_DS.bl${fwhm}+tlrc -expr "a-b" -prefix ${subj}.${cond}.bl${fwhm}
+          set NegDec_DS_NegLook_DSlist = "$NegDec_DS_NegLook_DSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+
+ 	set cond = "NegDec_PS_NegLook_PS"
+	set NegDec_PS_NegLook_PSlist = ""
+        foreach i ( $subjects )
+	  set subj = `echo $i | cut -f1 -d"@"`
+	  3dcalc -a ${subj}.NegDec_PS.bl${fwhm}+tlrc -b ${subj}.NegLook_PS.bl${fwhm}+tlrc -expr "a-b" -prefix ${subj}.${cond}.bl${fwhm}
+          set NegDec_PS_NegLook_PSlist = "$NegDec_PS_NegLook_PSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+        
+ 	set cond = "PPI_NegDec_DS_PPI_NegLook_DS"
+	set PPI_NegDec_DS_PPI_NegLook_DSlist = ""
+        foreach i ( $subjects )
+	  set subj = `echo $i | cut -f1 -d"@"`
+	  3dcalc -a ${subj}.PPI_NegDec_DS.bl${fwhm}+tlrc -b ${subj}.PPI_NegLook_DS.bl${fwhm}+tlrc -expr "a-b" -prefix ${subj}.${cond}.bl${fwhm}
+          set PPI_NegDec_DS_PPI_NegLook_DSlist = "$PPI_NegDec_DS_PPI_NegLook_DSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+
+ 	set cond = "PPI_NegDec_PS_PPI_NegLook_PS"
+	set PPI_NegDec_PS_PPI_NegLook_PSlist = ""
+        foreach i ( $subjects )
+	  set subj = `echo $i | cut -f1 -d"@"`
+	  3dcalc -a ${subj}.PPI_NegDec_PS.bl${fwhm}+tlrc -b ${subj}.PPI_NegLook_PS.bl${fwhm}+tlrc -expr "a-b" -prefix ${subj}.${cond}.bl${fwhm}
+          set PPI_NegDec_PS_PPI_NegLook_PSlist = "$PPI_NegDec_PS_PPI_NegLook_PSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end        
+                      
+ 	set cond = "PPI_PosDec_DS_PPI_PosLook_DS"
+	set PPI_PosDec_DS_PPI_PosLook_DSlist = ""
+        foreach i ( $subjects )
+	  set subj = `echo $i | cut -f1 -d"@"`
+	  3dcalc -a ${subj}.PPI_PosDec_DS.bl${fwhm}+tlrc -b ${subj}.PPI_PosLook_DS.bl${fwhm}+tlrc -expr "a-b" -prefix ${subj}.${cond}.bl${fwhm}
+          set PPI_PosDec_DS_PPI_PosLook_DSlist = "$PPI_PosDec_DS_PPI_PosLook_DSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end
+
+ 	set cond = "PPI_PosDec_PS_PPI_PosLook_PS"
+	set PPI_PosDec_PS_PPI_PosLook_PSlist = ""
+        foreach i ( $subjects )
+	  set subj = `echo $i | cut -f1 -d"@"`
+	  3dcalc -a ${subj}.PPI_PosDec_PS.bl${fwhm}+tlrc -b ${subj}.PPI_PosLook_PS.bl${fwhm}+tlrc -expr "a-b" -prefix ${subj}.${cond}.bl${fwhm}
+          set PPI_PosDec_PS_PPI_PosLook_PSlist = "$PPI_PosDec_PS_PPI_PosLook_PSlist ${subj}.${cond}.bl${fwhm}+tlrc"
+        end 
+
+ #############################     
+ ## -set 2 is going to be displayed as positive activation -set1 is going to be displayed as negative activation.               	
+
+	3dttest++ -paired -prefix ttest.${group}.NegDec_PS_NegLook_PS.bl${fwhm} -setA $NegDec_PSlist -setB $NegLook_PSlist
+	3dttest++ -paired -prefix ttest.${group}.NegDec_DS_NegLook_DS.bl${fwhm} -setA $NegDec_DSlist -setB $NegLook_DSlist
+	3dttest++ -paired -prefix ttest.${group}.PPI.NegDec_PS_PPI.NegLook_PS.bl${fwhm} -setA $PPI_NegDec_PSlist -setB $PPI_NegLook_PSlist
+	3dttest++ -paired -prefix ttest.${group}.PPI.NegDec_DS_PPI.NegLook_DS.bl${fwhm} -setA $PPI_NegDec_DSlist -setB $PPI_NegLook_DSlist
+	3dttest++ -paired -prefix ttest.${group}.PPI.PosDec_PS_PPI.PosLook_PS.bl${fwhm} -setA $PPI_PosDec_PSlist -setB $PPI_PosLook_PSlist
+	3dttest++ -paired -prefix ttest.${group}.PPI.PosDec_DS_PPI.PosLook_DS.bl${fwhm} -setA $PPI_PosDec_DSlist -setB $PPI_PosLook_DSlist
+	
+################################	
+
+	# convefam to z scores
+
+	set cond = "NegDec_PS_NegLook_PS NegDec_PS_NegLook_PS PPI.NegDec_PS_PPI.NegLook_PS PPI.NegDec_DS_PPI.NegLook_DS PPI.PosDec_PS_PPI.PosLook_PS PPI.PosDec_DS_PPI.PosLook_DS"
+
+
+	foreach c ($cond)
+		3dmerge -doall -1zscore -prefix ttest.${group}.$c.bl${fwhm}.z ttest.${group}.$c.bl${fwhm}+tlrc
+	end
+
+
+#mkdir ${group}
+#mv ttest.*.z+tlrc* ${group}
+#rm -f ttest.*.bl${fwhm}+tlrc*
+
+endif
+
+
