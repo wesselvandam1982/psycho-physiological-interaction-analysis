@@ -1,0 +1,23 @@
+#!/bin/tcsh
+
+set subjects = "2 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40"
+set study = "ER"
+
+cd ..
+
+foreach s ( $subjects )
+
+cd $s/ppi_preprocessing$s.results
+set subj = ppi_preprocessing$s
+
+# Model_wave_function
+
+set prefix_3dd = basis.wave_function_tshift_PPI
+
+3dREMLfit -matrix ${prefix_3dd}X.xmat.1D \
+-input "pb05.$subj.r01.scale+tlrc.HEAD pb05.$subj.r02.scale+tlrc.HEAD pb05.$subj.r03.scale+tlrc.HEAD pb05.$subj.r04.scale+tlrc.HEAD" \
+-tout -Rbuck basis.wave_function_tshift_PPI_stats.${subj}_REML -Rvar basis.wave_function_tshift_PPI_stats.${subj}_REMLvar -verb $* 
+
+cd ../..
+
+end
